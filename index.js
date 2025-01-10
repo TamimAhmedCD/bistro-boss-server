@@ -128,10 +128,53 @@ async function run() {
 
     // menu post api
     app.post("/menu", verifyToken, verifyAdmin, async (req, res) => {
-      const item = req.body
-      const result = await menuCollection.insertOne(item)
+      const item = req.body;
+      const result = await menuCollection.insertOne(item);
       res.send(result);
     });
+    
+
+    // menu data by id api
+    app.get("/menu/:id", async (req, res) => {
+      const id = req.params.id;
+
+      let result;
+
+      // First, attempt to find using plain string `_id`
+      result = await menuCollection.findOne({ _id: id });
+
+      // If not found and id is a valid ObjectId, try with ObjectId
+      if (!result && ObjectId.isValid(id)) {
+        result = await menuCollection.findOne({ _id: new ObjectId(id) });
+      }
+
+      if (result) {
+        res.send(result);
+      }
+    });
+
+    app.patch('/menu/:id', async(req, res) => {
+      const item = req.body
+      const id = req.params.id
+      // const filter = { _id: id }
+      let filter
+      filter = {_id: id}
+      if(!filter && new ObjectId(id)) {
+        filter = {_id: new ObjectId(id)}
+      }
+      const updatedDoc = {
+        $set: {
+          name: item.name,
+          category: item.category,
+          price: item.price,
+          recipe: item.recipe,
+          image: item.image
+        }
+      }
+
+      const result = await menuCollection.updateOne(filter, updatedDoc)
+      res.send(result)
+    })
 
     // menu delete api
     app.delete("/menu/:id", verifyToken, verifyAdmin, async (req, res) => {
