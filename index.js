@@ -124,6 +124,32 @@ async function run() {
       res.send(result);
     });
 
+    app.post("/menu", async (req, res) => {
+      const item = req.body
+      const result = await menuCollection.insertOne(item)
+      res.send(result);
+    });
+
+    app.delete("/menu/:id", async (req, res) => {
+      const id = req.params.id;
+
+      let result;
+
+      // First, attempt to find using plain string `_id`
+      result = await menuCollection.findOne({ _id: id });
+
+      // If not found and id is a valid ObjectId, try with ObjectId
+      if (!result && ObjectId.isValid(id)) {
+        result = await menuCollection.findOne({ _id: new ObjectId(id) });
+      }
+
+      if (result) {
+        res.send(result);
+      } else {
+        res.status(404).send({ message: "Menu item not found" });
+      }
+    });
+
     app.get("/reviews", async (req, res) => {
       const result = await reviewCollection.find().toArray();
       res.send(result);
