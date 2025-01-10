@@ -118,29 +118,33 @@ async function run() {
       res.send(result);
     });
 
-    // menu related api
+    // ! menu related api
+
+    // menu get api
     app.get("/menu", async (req, res) => {
       const result = await menuCollection.find().toArray();
       res.send(result);
     });
 
+    // menu post api
     app.post("/menu", verifyToken, verifyAdmin, async (req, res) => {
       const item = req.body
       const result = await menuCollection.insertOne(item)
       res.send(result);
     });
 
-    app.delete("/menu/:id", async (req, res) => {
+    // menu delete api
+    app.delete("/menu/:id", verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
 
       let result;
 
       // First, attempt to find using plain string `_id`
-      result = await menuCollection.findOne({ _id: id });
+      result = await menuCollection.deleteOne({ _id: id });
 
       // If not found and id is a valid ObjectId, try with ObjectId
       if (!result && ObjectId.isValid(id)) {
-        result = await menuCollection.findOne({ _id: new ObjectId(id) });
+        result = await menuCollection.deleteOne({ _id: new ObjectId(id) });
       }
 
       if (result) {
@@ -150,6 +154,7 @@ async function run() {
       }
     });
 
+    // review get api
     app.get("/reviews", async (req, res) => {
       const result = await reviewCollection.find().toArray();
       res.send(result);
