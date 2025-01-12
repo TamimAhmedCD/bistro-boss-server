@@ -248,7 +248,11 @@ async function run() {
       const payment = req.body
       const paymentResult = await paymentCollection.insertOne(payment)
       console.log('payment info', payment);
-      res.send(paymentResult)
+      const query = {_id: {
+        $in: payment.cartId.map(id => new ObjectId(id))
+      }};
+      const deleteResult = await cartCollection.deleteMany(query)
+      res.send({deleteResult, paymentResult})
     })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
